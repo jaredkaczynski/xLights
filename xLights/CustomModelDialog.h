@@ -45,6 +45,7 @@ class ImageFilePickerCtrl;
 class ModelPreview;
 
 wxDECLARE_EVENT(EVT_GRID_KEY, wxCommandEvent);
+wxDECLARE_EVENT(EVT_SWITCH_GRID, wxCommandEvent);
 
 class CustomModelDialog: public wxDialog
 {
@@ -82,8 +83,10 @@ class CustomModelDialog: public wxDialog
     static const long CUSTOMMODELDLGMNU_REVERSE;
     static const long CUSTOMMODELDLGMNU_SHIFT;
     static const long CUSTOMMODELDLGMNU_INSERT;
-    static const long CUSTOMMODELDLGMNU_COMPRESS;
-    static const long CUSTOMMODELDLGMNU_TRIMUNUSEDSPACE;
+	static const long CUSTOMMODELDLGMNU_COMPRESS;
+	static const long CUSTOMMODELDLGMNU_FIND;
+	static const long CUSTOMMODELDLGMNU_FINDLAST;
+	static const long CUSTOMMODELDLGMNU_TRIMUNUSEDSPACE;
     static const long CUSTOMMODELDLGMNU_SHRINKSPACE10;
     static const long CUSTOMMODELDLGMNU_SHRINKSPACE50;
     static const long CUSTOMMODELDLGMNU_SHRINKSPACE99;
@@ -232,8 +235,11 @@ class CustomModelDialog: public wxDialog
 		void OnGridCustomCellRightClick(wxGridEvent& event);
 		void OnGridLabelRightClick(wxGridEvent& event);
 		void OnGridCustomCellLeftClick(wxGridEvent& event);
+		void OnGridKeyDown(wxKeyEvent& event);
+		void OnSwitchGrid(wxCommandEvent& event);
 
-        void Reverse();
+		void GetMinMaxNode(long& min, long& max);
+		void Reverse();
         bool CheckScale(std::list<wxPoint>& points, float scale) const;
         void FlipHorizontal();
         void FlipVertical();
@@ -243,7 +249,9 @@ class CustomModelDialog: public wxDialog
         void Insert(int selRow, int selCol);
         void Shift();
         void Compress();
-        bool AdjustNodeBy(int node, int adjust);
+		void Find();
+		void FindLast();
+		bool AdjustNodeBy(int node, int adjust);
         void TrimSpace();
         void ShrinkSpace(float min);
         void AddPage();

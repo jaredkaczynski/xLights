@@ -83,6 +83,7 @@ class ControllerModelDialog: public wxDialog
 	BaseCMObject* GetControllerToDropOn();
 	BaseCMObject* GetModelsCMObjectAt(wxPoint mouse);
 	PortCMObject* GetControllerPortAtLocation(wxPoint mouse);
+	PortCMObject* GetPixelPort(int port) const;
 	void ReloadModels();
 	void ClearOver(wxPanel* panel, std::list<BaseCMObject*> list);
 	std::string GetModelTooltip(ModelCMObject* m);
@@ -113,6 +114,7 @@ class ControllerModelDialog: public wxDialog
 
         static const long CONTROLLERModel_PRINT;
 		static const long CONTROLLERModel_SAVE_CSV;
+		static const long CONTROLLER_REMOVEALLMODELS;
 		static const long CONTROLLER_SMARTREMOTE_None;
 		static const long CONTROLLER_SMARTREMOTE_A;
 		static const long CONTROLLER_SMARTREMOTE_B;
@@ -123,7 +125,10 @@ class ControllerModelDialog: public wxDialog
 		static const long CONTROLLER_SMARTREMOTE_ID;
 		static const long CONTROLLER_SMARTREMOTE_Cascade;
 		static const long CONTROLLER_DMXCHANNEL;
+		static const long CONTROLLER_DMXCHANNELCHAIN;
 		static const long CONTROLLER_PROTOCOL;
+		static const long CONTROLLER_REMOVEPORTMODELS;
+		static const long CONTROLLER_MOVEMODELSTOPORT;
 		static const long CONTROLLER_BRIGHTNESS;
 		static const long CONTROLLER_BRIGHTNESSCLEAR;
 

@@ -19,6 +19,7 @@
 #include "../models/Model.h"
 #include "../outputs/ControllerEthernet.h"
 #include "ControllerCaps.h"
+#include "../UtilFunctions.h"
 
 #include <log4cpp/Category.hh>
 
@@ -326,7 +327,7 @@ bool UDControllerPort::ContainsModel(Model* m, int string) const {
 
     for (const auto& it : _models)
     {
-        if (it->GetModel() == m && string == it->GetString()) {
+        if (it->GetModel() == m && (string == it->GetString() || (string == 0 && it->GetString() == -1))) {
             return true;
         }
     }
@@ -648,7 +649,7 @@ int32_t UDControllerPort::GetStartChannel() const {
         return -1;
     }
     else {
-        if (_type == "USB/Serial") {
+        if (_type == "Serial") {
             return GetFirstModel()->GetStartChannel() - GetFirstModel()->GetDMXChannelOffset() + 1;
         }
         else {
@@ -705,6 +706,20 @@ int UDControllerPort::GetUniverseStartChannel() const {
 
 bool UDControllerPort::IsPixelProtocol() const {
     return Model::IsPixelProtocol(_protocol);
+}
+
+float UDControllerPort::GetAmps(int defaultBrightness) const
+{
+    float amps = 0.0f;
+    int currentBrightness = defaultBrightness;
+
+    if (_type == "Pixel") {
+        for (const auto& m : _models) {
+            currentBrightness = m->GetBrightness(currentBrightness);
+            amps += ((float)AMPS_PER_PIXEL * (m->Channels() / 3.0f) * currentBrightness) / 100.0f;
+        }
+    }
+    return amps;
 }
 
 std::string UDControllerPort::GetPortName() const {
@@ -814,6 +829,24 @@ bool UDControllerPort::Check(Controller* c, const UDController* controller, bool
     }
 
     return success;
+}
+
+std::string UDControllerPort::ExportAsCSV() const
+{
+    wxString line = wxString::Format("%s Port %d,",_type ,_port);
+    for (const auto& it : GetModels()) {
+        if (it->GetSmartRemote() > 0) {
+            char remote = ('@' + it->GetSmartRemote());
+            line += "Remote ";
+            line += remote;
+            line += ":";
+        }
+        line += it->GetName();
+        line += ",";
+    }
+
+    line += "\n";
+    return line;
 }
 #pragma endregion
 
@@ -936,11 +969,23 @@ UDControllerPort* UDController::GetControllerPixelPort(int port) {
 UDControllerPort* UDController::GetControllerSerialPort(int port) {
 
     if (!HasSerialPort(port)) {
-        _serialPorts[port] = new UDControllerPort("USB/Serial", port);
+        _serialPorts[port] = new UDControllerPort("Serial", port);
     }
     return _serialPorts[port];
 }
-UDControllerPortModel* UDController::GetControllerPortModel(const std::string& modelName, int str)
+
+UDControllerPort* UDController::GetPortContainingModel(Model* model) const
+{
+    for (const auto& it : _pixelPorts) {
+        if (it.second->ContainsModel(model, 0)) return it.second;
+    }
+    for (const auto& it : _serialPorts) {
+        if (it.second->ContainsModel(model, 0)) return it.second;
+    }
+    return nullptr;
+}
+
+UDControllerPortModel* UDController::GetControllerPortModel(const std::string& modelName, int str) const
 {
     for (const auto& it : _pixelPorts)
     {
@@ -1012,6 +1057,24 @@ Model* UDController::GetModelAfter(Model* m) const
         if (mm != nullptr) return mm;
     }
     return nullptr;
+}
+
+bool UDController::HasModels() const
+{
+    for (const auto& it : _pixelPorts) {
+        if (it.second->GetFirstModel() != nullptr)
+        {
+            return true;
+        }
+    }
+
+    for (const auto& it : _serialPorts) {
+        if (it.second->GetFirstModel() != nullptr) {
+            return true;
+        }
+    }
+
+    return false;
 }
 
 bool UDController::SetAllModelsToControllerName(const std::string& controllerName)
@@ -1248,17 +1311,25 @@ bool UDController::Check(const ControllerCaps* rules, std::string& res) {
     if (rules->GetNumberOfBanks() > 1) {
         int const banksize = rules->GetMaxPixelPort() / rules->GetNumberOfBanks();
         std::vector<int> bankSizes(rules->GetNumberOfBanks(), 0);
+        std::vector<int> bankLargestPort(rules->GetNumberOfBanks(), 0);
 
         for (const auto& it : _pixelPorts) {
             int const bank = (it.second->GetPort() - 1) / banksize;
             if (it.second->Channels() > bankSizes[bank]) {
                 bankSizes[bank] = it.second->Channels();
+                bankLargestPort[bank] = it.second->GetPort();
             }
         }
 
         int const sum = accumulate(bankSizes.begin(), bankSizes.end(), 0);
         if (sum > rules->GetMaxPixelPortChannels()) {
             res += wxString::Format("ERR: Controllers 'Bank' channel count(%d) is over the maximum(%d).\n", sum, rules->GetMaxPixelPortChannels()).ToStdString();
+            res += "     Largest ports on banks: ";
+            for (int i = 0; i < rules->GetNumberOfBanks(); i++)                 {
+                if (i != 0) res += ", ";
+                res += wxString::Format(" Bank %d - Port %d", i + 1, bankLargestPort[i]);
+            }
+            res += "\n";
             success = false;
         }
     }
@@ -1312,6 +1383,34 @@ bool UDController::Check(const ControllerCaps* rules, std::string& res) {
     }
 
     return success;
+}
+
+std::vector<std::string> UDController::ExportAsCSV()
+{
+    std::vector<std::string> lines;
+    int columnSize = 0;
+
+    for (int i = 1; i <= GetMaxPixelPort(); i++) {
+        if (columnSize < GetControllerPixelPort(i)->GetModels().size())
+            columnSize = GetControllerPixelPort(i)->GetModels().size();
+        lines.push_back(GetControllerPixelPort(i)->ExportAsCSV());
+	}
+	lines.push_back("\n");
+	for (int i = 1; i <= GetMaxSerialPort(); i++) {
+        if (columnSize < GetControllerSerialPort(i)->GetModels().size())
+            columnSize = GetControllerSerialPort(i)->GetModels().size();
+
+        lines.push_back(GetControllerSerialPort(i)->ExportAsCSV());
+    }
+
+    wxString header = "Output,";
+    for (int i = 1; i <= columnSize; i++) {
+        header += wxString::Format("Model %d,", i);
+    }
+    header += "\n";
+
+    lines.insert(lines.begin(), header);
+    return lines;
 }
 
 Output* UDController::GetFirstOutput() const {

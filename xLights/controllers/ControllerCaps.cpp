@@ -299,6 +299,11 @@ bool ControllerCaps::SupportsInputOnlyUpload() const {
     return DoesXmlNodeExist(_config, "SupportsInputOnlyUpload");
 }
 
+bool ControllerCaps::NeedsDDPInputUpload() const
+{
+    return DoesXmlNodeExist(_config, "NeedsDDPInputUpload");
+}
+
 bool ControllerCaps::SupportsLEDPanelMatrix() const {
 
     return DoesXmlNodeExist(_config, "SupportsLEDPanelMatrix");
@@ -316,6 +321,11 @@ bool ControllerCaps::SupportsVirtualStrings() const {
 bool ControllerCaps::SupportsSmartRemotes() const {
 
     return DoesXmlNodeExist(_config, "SupportsSmartRemotes");
+}
+
+bool ControllerCaps::SupportsRemotes() const
+{
+    return DoesXmlNodeExist(_config, "SupportsRemotes");
 }
 
 bool ControllerCaps::SupportsAutoLayout() const {

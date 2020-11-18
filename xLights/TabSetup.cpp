@@ -796,6 +796,26 @@ bool xLightsFrame::SaveNetworksFile() {
     static log4cpp::Category& logger_work = log4cpp::Category::getInstance(std::string("log_work"));
     logger_work.debug("        SaveNetworksFile.");
 
+    // if any of the controllers are in auto layout mode ... recalulate them
+    bool autoLayout = false;
+    for (const auto& it : _outputManager.GetControllers()) {
+        if (it->IsAutoLayout()) {
+            autoLayout = true;
+            break;
+        }
+    }
+
+    if (autoLayout) {
+        GetOutputModelManager()->AddASAPWork(OutputModelManager::WORK_MODELS_REWORK_STARTCHANNELS, "ControllerModelDialog::ControllerModelDialog");
+        GetOutputModelManager()->AddASAPWork(OutputModelManager::WORK_CALCULATE_START_CHANNELS, "ControllerModelDialog::ControllerModelDialog");
+        
+        // Now need to let all the recalculations work
+        while (!DoAllWork()) {
+            // dont get into a redraw loop from here
+            GetOutputModelManager()->RemoveWork("ASAP", OutputModelManager::WORK_REDRAW_LAYOUTPREVIEW);
+        }
+    }
+
     if (_outputManager.Save()) {
         UnsavedNetworkChanges = false;
 #ifdef __WXOSX__
@@ -1558,7 +1578,7 @@ void xLightsFrame::SetControllersProperties() {
             auto eth = dynamic_cast<ControllerEthernet*>(controller);
             auto caps = GetControllerCaps(selections.front());
             if (caps != nullptr && caps->SupportsUpload() && usingip == 1) {
-                if (caps->SupportsInputOnlyUpload() && (eth == nullptr || (eth->GetProtocol() != OUTPUT_DDP && eth->GetProtocol() != OUTPUT_ZCPP))) {
+                if (caps->SupportsInputOnlyUpload() && (eth == nullptr || ((eth->GetProtocol() != OUTPUT_DDP || caps->NeedsDDPInputUpload()) && eth->GetProtocol() != OUTPUT_ZCPP))) {
                     ButtonUploadInput->Enable();
                 }
                 else {

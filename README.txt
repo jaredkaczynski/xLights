@@ -11,6 +11,57 @@ Issue Tracker is found here: www.github.com/smeighan/xLights/issues
 
 XLIGHTS/NUTCRACKER RELEASE NOTES
 ---------------------------------
+2020.51 November 30 2020
+   -- enh (scott)  Add white on all to RGBW handling
+   -- bug (keith)  Fix custom model with indiv start nodes being incorrectly cleared
+2020.50 November 29 2020
+   -- enh (scott)  Added Export Controller Connections to Tool Menu. This exports a CSV file with all
+					the ethernet type controllers and the models attached to each port.
+   -- enh (scott)  Added "Scale Keep Aspect Ratio Crop" to the Picture Effect.
+   -- enh (scott)  Added "Ctrl/Cmd + Scroll Wheel" Page Scrolling to Custom Model Dialog .
+   -- enh (keith)  Add bulk move and bulk remove to visualiser right click menus
+   -- enh (keith)  Add node find right click menu options to custom model dialog and submodel node selection dialog
+   -- enh (keith)  Add option to set remote falcon into enable mode when not playing supported playlists
+   -- bug (scott)  Fix Check Sequence Connection Error for Auto Configure Panel Controllers.
+   -- bug (keith)  When a controller is in auto layout mode then recalc before saving controller tab and when opening visualiser
+   -- bug (keith)  When switching between virtual strings falcon upload should reset overridden properties to the default
+   -- bug (keith)  Fix circle model inside start location generates incorrect buffer/wiring
+   -- bug (keith)  Fix incorrect controller rebooting message when uploading to old firmware on F48 controllers
+   -- bug (keith)  When using auto layout remove individual start channels from models as these cause issues
+   -- bug (keith)  Fix single channel window frames display as a single dot
+2020.49 November 24 2020
+   -- enh (scott)  Added Import Model Blend Mode to xLights Sequence Import
+   -- enh (keith)  Allow remote falcon to only work while some playlists are playing
+   -- enh (keith)  Add to port tooltip in visualiser an estimate of the current draw on the port
+   -- enh (keith)  Add a brightness blend mode to xSchedule blend modes
+   -- enh (keith)  Add a way to renumber a DMX channel of a prop in the visualiser and then cascade to the rest of the models
+   -- enh (keith)  Add to visualiser colour bars to left of ports showing banks and smart remote groups
+   -- enh (keith)  When controller port limits are broken on the falcon show the largest port in each bank to ease troubleshooting
+   -- enh (dkulp)  Extend FSEQ file definition to support larger numbers of compression blocks
+   -- bug (scott)  Fix Group Count for Falcon Upload
+   -- bug (keith)  Allow xlights import to import from sequences that only contain timing tracks
+   -- bug (keith)  Fix an issue with music fade value curve which can create insane render times
+   -- bug (keith)  Fix unused smart remote throws off falcon upload setting of bank sizes
+   -- bug (keith)  Fix cant change height of 3 point models in model properties
+   -- bug (keith)  Fix unnecessary reboot of falcon on upload
+   -- bug (keith)  Fix double click on model category in model download seems to hang mouse pointer
+   -- bug (keith)  Fix window frame model sometimes loses a corner node
+   -- bug (keith)  Fix ZCPP does not default to auto layout when discovered
+   -- bug (keith)  Fix circle model wired from the inside   
+   -- bug (keith)  When start of model is chosen default the channel offset to 1 as this is the most common choice
+2020.48 November 17 2020
+   -- enh (keith)  Add support for Falcon firmware 2.58
+   -- enh (keith)  On visualiser freeze the port names on the left of the panel when scrolling right
+   -- enh (keith)  On visualise models panel improve model sorting
+   -- enh (keith)  Add a simpler generic DMX model
+   -- enh (keith)  Show DMX channel number on main panel in visualiser
+   -- bug (keith)  Fix issues with window frame model when top and bottom have different numbers of nodes
+   -- bug (keith)  Fix issue removing model from a port in visualiser
+   -- bug (keith)  Fix VU Meter Timing event pulse colour clamps max fade frames to model size
+   -- bug (keith)  Fix xSchedule web site not defaulting correctly to index.html
+   -- bug (scott)  Fix video/picture effect does not store filenames as xml safe
+   -- bug (scott)  Fix FPPD neets restart on outputs upload
+   -- bug (dkulp)  Limit render buffers to 2048 to prevent run away render times
 2020.47 November 8 2020
    -- enh (keith)  Optionally suppress xbkp newer and model missing errors when batch rendering
    -- enh (keith)  Add option to minimise non essential xSchedule UI updates to squeeze out better performance

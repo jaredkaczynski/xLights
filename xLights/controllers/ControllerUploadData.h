@@ -16,6 +16,7 @@
 #include <list>
 #include <map>
 #include <set>
+#include <vector>
 
 class UDControllerPort;
 class UDController;
@@ -192,6 +193,8 @@ class UDControllerPort
     std::string GetProtocol() const { return _protocol; }
     bool IsPixelProtocol() const;
 	
+    float GetAmps(int defaultBrightness) const;
+
     std::string GetPortName() const;
 	int GetPort() const { return _port; }
     
@@ -203,6 +206,7 @@ class UDControllerPort
 
     void Dump() const;
     bool Check(Controller* c, const UDController* controller, bool pixel, const ControllerCaps* rules, std::string& res) const;
+    std::string ExportAsCSV() const;
     #pragma endregion
 };
 
@@ -235,7 +239,8 @@ class UDController
     #pragma region Port Handling
     UDControllerPort* GetControllerPixelPort(int port);
 	UDControllerPort* GetControllerSerialPort(int port);
-    UDControllerPortModel* GetControllerPortModel(const std::string& modelName, int str);
+    UDControllerPort* GetPortContainingModel(Model* model) const;
+    UDControllerPortModel* GetControllerPortModel(const std::string& modelName, int str) const;
     #pragma endregion
 
     #pragma region Getters and Setters
@@ -246,6 +251,7 @@ class UDController
     int GetMaxPixelPortChannels() const;
 
     Model* GetModelAfter(Model* m) const;
+    bool HasModels() const;
 
     bool SetAllModelsToControllerName(const std::string& controllerName);
     bool SetAllModelsToValidProtocols(const std::list<std::string>& pixelProtocols, const std::list<std::string>& serialProtocols, bool allsame);
@@ -254,6 +260,7 @@ class UDController
     bool IsValid(ControllerCaps* rules) const;
     void Dump() const;
     bool Check(const ControllerCaps* rules, std::string& res);
+    std::vector<std::string> ExportAsCSV();
         
     Output* GetFirstOutput() const;
     

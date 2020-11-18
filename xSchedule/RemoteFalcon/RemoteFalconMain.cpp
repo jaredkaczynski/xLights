@@ -458,6 +458,12 @@ void RemoteFalconFrame::Start()
 
     SendPlaylists();
 
+    if (_options.IsEnableDisable()) {
+        AddMessage("Asking remote falcon to enable viewer control.");
+        AddMessage("    " + _remoteFalcon->EnableViewerControl(true));
+        _viewerControlEnabled = true;
+    }
+
     Timer_UpdatePlaylist.Start(10000);
     AddMessage("Started.");
 }
@@ -466,6 +472,12 @@ void RemoteFalconFrame::Stop(bool suppressMessage)
 {
     static log4cpp::Category& logger_base = log4cpp::Category::getInstance(std::string("log_base"));
     logger_base.debug("RemoteFalconFrame::Stop");
+
+    if (_options.IsEnableDisable()) {
+        AddMessage("Asking remote falcon to disable viewer control.");
+        AddMessage("    " + _remoteFalcon->EnableViewerControl(false));
+        _viewerControlEnabled = false;
+    }
 
     Timer_UpdatePlaylist.Stop();
     _running = false;
@@ -618,13 +630,45 @@ void RemoteFalconFrame::DoNotifyStatus(const std::string& status)
         if (trigger == "scheduled" || trigger == "queued") {
             int queueLength = wxAtoi(val["queuelength"].AsString());
             auto lefts = wxAtol(val["leftms"].AsString()) / 1000;
+            _playingPlaylist = val["playlist"].AsString();
 
-            if (
-                (queueLength == 0 && _options.GetImmediatelyInterrupt()) || // if immediately interrupt then we always ask for the next song
-                (queueLength == 1 && lefts <= _options.GetLeadTime()) || // if there is a song in the queue then dont ask until it is almost done
-                (queueLength == 0 && !_options.GetImmediatelyInterrupt() && lefts <= _options.GetLeadTime()) // if there is nothing in the queue but we are to gracefully interrupt then wait until the current song is almost done
-                ) {
-                GetAndPlaySong(playing);
+            // we can only play a song if the playlist playing allows
+            if (_options.IsPlayDuring(_playingPlaylist)) {
+
+                if (!_viewerControlEnabled) {
+                    if (_options.IsEnableDisable()) {
+                        AddMessage("Asking remote falcon to enable viewer control.");
+                        AddMessage("    " + _remoteFalcon->EnableViewerControl(true));
+                        _viewerControlEnabled = true;
+                    }
+                }
+
+                if (
+                    (queueLength == 0 && _options.GetImmediatelyInterrupt()) || // if immediately interrupt then we always ask for the next song
+                    (queueLength == 1 && lefts <= _options.GetLeadTime()) || // if there is a song in the queue then dont ask until it is almost done
+                    (queueLength == 0 && !_options.GetImmediatelyInterrupt() && lefts <= _options.GetLeadTime()) // if there is nothing in the queue but we are to gracefully interrupt then wait until the current song is almost done
+                    ) {
+                    GetAndPlaySong(playing);
+                }
+            }
+            else                 {
+                if (_viewerControlEnabled) {
+                    if (_options.IsEnableDisable()) {
+                        AddMessage("Asking remote falcon to disable viewer control.");
+                        AddMessage("    " + _remoteFalcon->EnableViewerControl(false));
+                        _viewerControlEnabled = false;
+                    }
+                }
+            }
+        }
+        else             {
+            _playingPlaylist = "";
+            if (_viewerControlEnabled)                 {
+                if (_options.IsEnableDisable()) {
+                    AddMessage("Asking remote falcon to disable viewer control.");
+                    AddMessage("    " + _remoteFalcon->EnableViewerControl(false));
+                    _viewerControlEnabled = false;
+                }
             }
         }
     }

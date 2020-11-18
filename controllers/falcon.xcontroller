@@ -19,6 +19,7 @@
         <SupportsVirtualStrings/>
         <SupportsAutoLayout/>
         <MergeConsecutiveVirtualStrings/>
+		<SupportsRemotes/>
 
         <MaxInputUniverses>96</MaxInputUniverses>
         <MaxSerialPortChannels>512</MaxSerialPortChannels>
@@ -53,7 +54,9 @@
             <Protocol>e131</Protocol>
             <Protocol>artnet</Protocol>
             <Protocol>zcpp</Protocol>
+            <Protocol>ddp</Protocol>
         </InputProtocols>
+		<NeedsDDPInputUpload/>
         <SmartRecieverTypes>
             <Type>falcon4</Type>
         </SmartRecieverTypes>

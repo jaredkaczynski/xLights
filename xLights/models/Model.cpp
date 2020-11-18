@@ -62,8 +62,8 @@ static const char* NODE_TYPE_VLUES[] = {
 };
 static wxArrayString NODE_TYPES(26, NODE_TYPE_VLUES);
 
-static const char *RGBW_HANDLING_VALUES[] = {"R=G=B -> W", "RGB Only", "White Only", "Advanced"};
-static wxArrayString RGBW_HANDLING(4, RGBW_HANDLING_VALUES);
+static const char *RGBW_HANDLING_VALUES[] = {"R=G=B -> W", "RGB Only", "White Only", "Advanced", "White On All"};
+static wxArrayString RGBW_HANDLING(5, RGBW_HANDLING_VALUES);
 
 static const char *PIXEL_STYLES_VALUES[] = {"Square", "Smooth", "Solid Circle", "Blended Circle"};
 static wxArrayString PIXEL_STYLES(4, PIXEL_STYLES_VALUES);
@@ -803,6 +803,18 @@ void Model::AddProperties(wxPropertyGridInterface* grid, OutputManager* outputMa
     DisableUnusedProperties(grid);
 }
 
+void Model::ClearIndividualStartChannels()
+{
+    // dont clear custom models
+    if (IsCustom()) return;
+
+    ModelXml->DeleteAttribute("Advanced");
+    // remove per strand start channels if individual isnt selected
+    for (int x = 0; x < 100; x++) {
+        ModelXml->DeleteAttribute(StartChanAttrName(x));
+    }
+}
+
 void Model::GetControllerProtocols(wxArrayString& cp, int& idx) {
 
     auto caps = GetControllerCaps();
@@ -989,7 +1001,7 @@ void Model::AddControllerProperties(wxPropertyGridInterface *grid) {
             auto sp2 = grid->AppendIn(sp, new wxUIntProperty("Group Count", "ModelControllerConnectionPixelGroupCount",
                 wxAtoi(GetControllerConnection()->GetAttribute("groupCount", "1"))));
             sp2->SetAttribute("Min", 0);
-            sp2->SetAttribute("Max", 50);
+            sp2->SetAttribute("Max", 500);
             sp2->SetEditor("SpinCtrl");
             if (!node->HasAttribute("groupCount")) {
                 grid->DisableProperty(sp2);
@@ -6489,7 +6501,11 @@ void Model::RestoreDisplayDimensions()
     if ((DisplayAs.rfind("Dmx", 0) != 0) && DisplayAs != "Image")
     {
         SetWidth(_savedWidth, true);
-        SetHeight(_savedHeight, true);
+        // We dont want to set the height of three point models
+        if (dynamic_cast<const ThreePointScreenLocation*>(&(GetModelScreenLocation())) == nullptr)
+        {
+            SetHeight(_savedHeight, true);
+        }
         SetDepth(_savedDepth, true);
     }
 }

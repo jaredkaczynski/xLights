@@ -52,12 +52,14 @@ class RemoteFalconFrame : public wxFrame
     std::atomic<bool> _running;
     std::string _oldSteps;
     std::string _playlist;
+    std::string _playingPlaylist;
     std::string _mode;
     std::string _subdomain;
     std::future<void> _sendPlaylistFuture;
     std::future<void> _sendPlayingFuture;
     std::future<void> _handleStatusFuture;
     std::atomic<int> _toProcess;
+    bool _viewerControlEnabled = false;
 
     void ValidateWindow();
     void SendReport(const wxString &loc, wxDebugReportCompress &report);
