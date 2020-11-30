@@ -429,9 +429,12 @@ void HinksPix::CalculateSmartRecievers(UDControllerPort* stringData)
     int bank = expansionPort / 4;
     int subPort = (expansionPort % 4);
     int32_t portStartChan = stringData->GetStartChannel();
+    int prevID = -1;
     for (const auto& it : stringData->GetModels()) {
         if (it->GetSmartRemote() > 0) {
             int id = it->GetSmartRemote() - 1;
+            if (prevID == id)//skip multiple models on the save port
+                continue;
             int32_t startChan = it->GetStartChannel();
             auto smartOut = std::find_if(_smartOutputs[expansionBoard][bank].begin(), _smartOutputs[expansionBoard][bank].end(), [id](auto const& so) {
                     return so.id == id;
@@ -444,6 +447,7 @@ void HinksPix::CalculateSmartRecievers(UDControllerPort* stringData)
                     smartPort.type = 1;
                 smartPort.portStartPixel[subPort] = ((startChan - portStartChan) / it->GetChannelsPerPixel()) + 1;
             }
+            prevID = id;
         }
     }
 }
@@ -833,7 +837,6 @@ bool HinksPix::SetInputUniverses(ControllerEthernet* controller, wxWindow* paren
 
     auto it = outputs.begin();
     for (int j = 0; j < numberOfCalls; j++) {
-        bool post = false;
         wxString msg = wxString::Format("ROWCNT=16:ROW=%d:", j);
         for (int i = 0; i < 6; i++) {
             if (it != outputs.end()) {
@@ -845,18 +848,17 @@ bool HinksPix::SetInputUniverses(ControllerEthernet* controller, wxWindow* paren
                 cntr_start += (*it)->GetChannels();
                 it++;
                 index++;
-                post = true;
             }
             else {
                 msg += ",0,0,0,0,0,0";
             }
         }
         //post data
-        if (post) {
-            auto const res = GetControllerData(2001, msg);
-            if (res != "done")
-                worked = false;
-        }
+
+        auto const res = GetControllerData(2001, msg);
+        if (res != "done")
+            worked = false;
+
     }
 
     //reboot

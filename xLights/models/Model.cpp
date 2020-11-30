@@ -5895,8 +5895,8 @@ int Model::GetSortableSmartRemote() const
 {
     wxString s = GetControllerConnection()->GetAttribute("SmartRemote", "0");
     int sr = wxAtoi(s);
-
-    if (sr < 4) return sr += 10;
+    if(!IsHinksPixSR(GetSmartRemoteType()))
+        if (sr < 4) return sr += 10;
     return sr;
 }
 
