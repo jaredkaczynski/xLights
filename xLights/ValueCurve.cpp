@@ -2017,7 +2017,7 @@ float ValueCurve::FindMinPointLessThan(float point)
     {
         if (it->x < point)
         {
-            res = it->x + 0.025;
+            res = it->x + (1.0/VC_X_POINTS);
         }
     }
 
@@ -2032,7 +2032,7 @@ float ValueCurve::FindMaxPointGreaterThan(float point)
     {
         if (it->x > point)
         {
-            res = it->x - 0.025;
+            res = it->x - (1.0/VC_X_POINTS);
             break;
         }
     }
